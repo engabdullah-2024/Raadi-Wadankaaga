@@ -1,103 +1,113 @@
-import Image from "next/image";
+'use client';
+
+import { useEffect, useState } from 'react';
+
+type CountryType = {
+  cca3: string;
+  name: { common: string };
+  capital?: string[];
+  region: string;
+  subregion?: string;
+  population: number;
+  area?: number;
+  flags: { png: string };
+  languages?: Record<string, string>;
+};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [countries, setCountries] = useState<CountryType[]>([]);
+  const [search, setSearch] = useState('');
+  const [result, setResult] = useState<CountryType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  useEffect(() => {
+    async function fetchCountries() {
+      try {
+        const res = await fetch(
+          'https://restcountries.com/v3.1/all?fields=name,capital,region,subregion,population,area,flags,cca3,languages'
+        );
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          setCountries(data);
+          setResult(data);
+          setError(null);
+        } else {
+          setError('Unexpected data format');
+        }
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCountries();
+  }, []);
+
+  const handleSearch = () => {
+    if (!search.trim()) {
+      setResult(countries);
+      return;
+    }
+
+    const filtered = countries.filter((c) =>
+      c.name.common.toLowerCase().includes(search.toLowerCase().trim())
+    );
+    setResult(filtered);
+  };
+
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-white to-blue-100 p-6">
+      <h1 className="text-4xl font-bold text-blue-700 mb-6 text-center">Find Your Country</h1>
+
+      <div className="max-w-xl mx-auto flex gap-3 mb-8">
+        <input
+          type="text"
+          className="flex-grow p-3 rounded border"
+          placeholder="Search country..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+        />
+        <button
+          className="bg-blue-600 text-white px-6 rounded hover:bg-blue-700"
+          onClick={handleSearch}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          Search
+        </button>
+      </div>
+
+      {loading && <p className="text-center">Loading countries...</p>}
+      {error && <p className="text-center text-red-600">{error}</p>}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        {result.map((country) => {
+          const languages = country.languages
+            ? Object.values(country.languages).join(', ')
+            : 'N/A';
+
+          return (
+            <div key={country.cca3} className="bg-white rounded shadow p-4 hover:scale-105 transition">
+              <img
+                src={country.flags.png}
+                alt={country.name.common}
+                className="w-full h-40 object-cover rounded mb-3"
+                loading="lazy"
+              />
+              <h2 className="font-semibold text-xl mb-1">{country.name.common}</h2>
+              <p>Capital: {country.capital?.[0] || 'N/A'}</p>
+              <p>Region: {country.region}</p>
+              <p>Subregion: {country.subregion || 'N/A'}</p>
+              <p>Population: {country.population.toLocaleString()}</p>
+              <p>Area: {country.area ? `${country.area.toLocaleString()} km²` : 'N/A'}</p>
+              <p>Languages: {languages}</p>
+            </div>
+          );
+        })}
+      </div>
+    </main>
   );
 }
