@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ModeToggle } from './components/ModeToggle';
 
 type CountryType = {
   cca3: string;
@@ -60,13 +61,20 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-white to-blue-100 p-6">
-      <h1 className="text-4xl font-bold text-blue-700 mb-6 text-center">Find Your Country</h1>
+    <main className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 transition-colors duration-300">
+      {/* Toggle top-right */}
+      <div className="flex justify-end mb-6">
+        <ModeToggle />
+      </div>
+
+      <h1 className="text-4xl font-bold text-blue-700 dark:text-blue-300 mb-6 text-center">
+        Find Your Country
+      </h1>
 
       <div className="max-w-xl mx-auto flex gap-3 mb-8">
         <input
           type="text"
-          className="flex-grow p-3 rounded border"
+          className="flex-grow p-3 rounded border dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white"
           placeholder="Search country..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -81,7 +89,7 @@ export default function Home() {
       </div>
 
       {loading && <p className="text-center">Loading countries...</p>}
-      {error && <p className="text-center text-red-600">{error}</p>}
+      {error && <p className="text-center text-red-500">{error}</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
         {result.map((country) => {
@@ -90,7 +98,10 @@ export default function Home() {
             : 'N/A';
 
           return (
-            <div key={country.cca3} className="bg-white rounded shadow p-4 hover:scale-105 transition">
+            <div
+              key={country.cca3}
+              className="bg-white dark:bg-gray-800 rounded shadow p-4 hover:scale-105 transition"
+            >
               <img
                 src={country.flags.png}
                 alt={country.name.common}
